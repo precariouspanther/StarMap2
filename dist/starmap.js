@@ -17,72 +17,84 @@ var CanvasTexture = function (cb) {
 
 var Particle = function (position, app) {
     'use strict';
-    var radius = Math.random() * 1.1 + 1;
-    var haloRadius = Math.ceil(radius * 20);
-    var colour = {
-        red: 255,
-        green: 255,
-        blue: 255
-    };
-    if (Math.random() > 0.7) {
-        colour.red = Math.round(Math.random() * 100 + 55);
-        colour.green = Math.round(Math.random() * 100 + 55);
-        colour.blue = 255;
-    }
 
-    var texture = new CanvasTexture(function (canvas) {
-        canvas.width = haloRadius;
-        canvas.height = haloRadius;
-        //Core
-        var ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'rgb(' + colour.red + ',' + colour.green + ',' + colour.blue + ')';
-        ctx.beginPath();
-        ctx.arc(haloRadius / 2, haloRadius / 2, radius, 0, 360, false);
-        ctx.fill();
-        //Halo
-        var grd = ctx.createRadialGradient(haloRadius / 2, haloRadius / 2, radius, haloRadius / 2, haloRadius / 2, Math.ceil(haloRadius));
-        grd.addColorStop(0, 'rgba(' + colour.red + ',' + colour.green + ',' + colour.blue + ',' + 0.05 + ')');
-        grd.addColorStop(0.3, 'rgba(' + colour.red + ',' + colour.green + ',' + colour.blue + ',0)');
+    var sprite = new PIXI.Sprite();
 
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(haloRadius / 2, haloRadius / 2, haloRadius, 0, 360, false);
-        //ctx.fill();
-    });
-    var sprite = new PIXI.Sprite(texture);
-    //sprite.blendMode = PIXI.BLEND_MODES.ADD;
     sprite.blendMode = PIXI.BLEND_MODES.SCREEN;
-    //sprite.blendMode = PIXI.BLEND_MODES.HARD_LIGHT;
-    //sprite.blendMode = PIXI.BLEND_MODES.SCREEN;
     app.stage.addChild(sprite);
+
+    var state = {
+        ALIVE: "ALIVE",
+        DYING: "DYING",
+        DEAD: "DEAD"
+    };
 
     //app.stage.addChild(joinLines);
     var $scope = {
+        alpha: 1,
+        state: state.ALIVE,
         sprite: sprite,
         stage: app,
-        radius: radius,
-        acceleration: new Vector2(),
-        velocity: new Vector2(Math.random() - 0.5, Math.random() - 0.5),
-        position: position,
+        radius: 0,
+        haloRadius: 0,
         colour: {
             red: 255,
             green: 255,
             blue: 255
         },
+        acceleration: new Vector2(),
+        velocity: new Vector2(Math.random() - 0.5, Math.random() - 0.5),
+        position: position,
         init: function () {
+            $scope.radius = Math.random() * 1.1 + 1;
             if (Math.random() > 0.7) {
-                $scope.colour.red = Math.round(Math.random() * 200 + 55);
-                $scope.colour.green = Math.round(Math.random() * 200 + 55);
-                $scope.colour.blue = Math.round(Math.random() * 200 + 55);
+                $scope.colour.red = Math.round(Math.random() * 100 + 55);
+                $scope.colour.green = Math.round(Math.random() * 100 + 55);
+                $scope.colour.blue = 255;
             }
+            $scope.createTexture($scope.radius);
         },
-        die:function(){
-            app.stage.removeChild(sprite);
+        createTexture: function (radius) {
+            $scope.haloRadius = Math.ceil(radius * 20);
+            sprite.texture = new CanvasTexture(function (canvas) {
+                canvas.width = $scope.haloRadius;
+                canvas.height = $scope.haloRadius;
+                //Core
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'rgb(' + $scope.colour.red + ',' + $scope.colour.green + ',' + $scope.colour.blue + ')';
+                ctx.beginPath();
+                ctx.arc($scope.haloRadius / 2, $scope.haloRadius / 2, radius, 0, 360, false);
+                ctx.fill();
+                //Halo
+                var grd = ctx.createRadialGradient($scope.haloRadius / 2, $scope.haloRadius / 2, radius, $scope.haloRadius / 2, $scope.haloRadius / 2, Math.ceil($scope.haloRadius));
+                grd.addColorStop(0, 'rgba(' + $scope.colour.red + ',' + $scope.colour.green + ',' + $scope.colour.blue + ',' + 0.05 + ')');
+                grd.addColorStop(0.3, 'rgba(' + $scope.colour.red + ',' + $scope.colour.green + ',' + $scope.colour.blue + ',0)');
+
+                ctx.fillStyle = grd;
+                ctx.beginPath();
+                ctx.arc($scope.haloRadius / 2, $scope.haloRadius / 2, $scope.haloRadius, 0, 360, false);
+                //ctx.fill();
+            });
+        },
+        die: function () {
+            //Trigger fade
+            $scope.state = state.DYING;
         },
         tick: function () {
-            //Twinkle
-            sprite.alpha = Math.random() * 0.4 + 0.6;
+            if ($scope.state == state.DYING) {
+                //Dying
+                $scope.alpha -= 0.01;
+                sprite.alpha = $scope.alpha;
+                if ($scope.alpha <= 0) {
+                    $scope.state = state.DEAD;
+                    return;
+                }
 
+                return;
+            } else {
+                //Twinkle
+                sprite.alpha = Math.random() * 0.4 + 0.6;
+            }
             //Move
             $scope.acceleration.set(Math.random() - 0.5, Math.random() - 0.5).scale(app.maxSpeed);
             $scope.acceleration.clampAbs(app.maxSpeed);
@@ -102,8 +114,8 @@ var Particle = function (position, app) {
             }
             $scope.velocity.clampAbs(app.maxSpeed);
             $scope.position.add($scope.velocity, 0.1);
-            sprite.position.x = $scope.position.x - (haloRadius / 2);
-            sprite.position.y = $scope.position.y - (haloRadius / 2);
+            sprite.position.x = $scope.position.x - ($scope.haloRadius / 2);
+            sprite.position.y = $scope.position.y - ($scope.haloRadius / 2);
         }
     };
 
@@ -115,9 +127,10 @@ var Particle = function (position, app) {
  * @author Adam Benson <adam@precariouspanther.net>
  */
 
-var StarMap = function (width, height, starCount) {
+var StarMap = function (width, height, maxStars) {
     'use strict';
     var threshold = ((width + height) / 2 ) / 20;
+    var maxLines = maxStars * 7;
     var renderer = PIXI.autoDetectRenderer(width, height, {backgroundColor: 0x160831});
     document.body.appendChild(renderer.view);
     var stage = new PIXI.Container();
@@ -163,7 +176,7 @@ var StarMap = function (width, height, starCount) {
     //shadowSprite.blendMode = PIXI.BLEND_MODES.SOFT_LIGHT;
     stage.addChild(backgroundSprite);
 
-
+    var lineCount;
     var thresholdSquare = Math.pow(threshold, 2);
     var mouseThreshold = threshold * 10;
     var mouseThresholdSquare = thresholdSquare * 10;
@@ -175,8 +188,9 @@ var StarMap = function (width, height, starCount) {
         stage: stage,
         joinLines: joinLines,
         nodes: [],
+        deadNodes: [],
         init: function () {
-            for (var x = 0; x < starCount; x++) {
+            for (var x = 0; x < maxStars; x++) {
                 $scope.addStar(new Vector2(Math.random() * width, Math.random() * height), $scope);
             }
             $scope.mouse.active = false;
@@ -184,44 +198,53 @@ var StarMap = function (width, height, starCount) {
             stage.addChild(joinLines);
             stage.addChild(shadowSprite);
         },
-        addStar:function(position){
+        addStar: function (position) {
             var p = new Particle(position, $scope);
             $scope.addNode(p);
+            if ($scope.nodes.length > maxStars) {
+                $scope.killNode();
+            }
         },
         addNode: function (node) {
             $scope.nodes.push(node);
         },
-        removeNode: function (node) {
-            $scope.nodes.splice($scope.nodes.indexOf(node), 1);
+        killNode: function () {
+            var dead = $scope.nodes.shift();
+            $scope.deadNodes.push(dead);
+            dead.die();
         },
         tick: function () {
             var distance;
 
             //Cull too many stars
-            if($scope.nodes.length > starCount){
-                var dead = $scope.nodes.shift();
-                dead.die();
+            if ($scope.nodes.length > maxStars) {
+                $scope.killNode();
             }
 
-
+            lineCount = 0;
             requestAnimationFrame($scope.tick);
             joinLines.clear();
             $scope.nodes.forEach(function (node, i) {
                 //Particles
                 node.tick();
-                //Join lines
-                $scope.nodes.slice(i).forEach(function (joinNode) {
-                    var d2 = joinNode.position.distanceSquare(node.position);
-                    if (d2 < thresholdSquare) {
-                        distance = Math.sqrt(d2);
-                        var alpha = (((threshold - distance) / threshold) * 0.4) + (Math.random() * 0.05);
-                        joinLines.lineStyle(alpha * (node.radius + joinNode.radius) * 3, 0x00dbff, alpha);
-                        joinLines.moveTo(node.position.x, node.position.y);
-                        joinLines.lineTo(joinNode.position.x, joinNode.position.y);
-                    }
-                });
+                if (lineCount < maxLines) {
+                    $scope.nodes.slice(i).forEach(function (joinNode) {
+                        if (lineCount > maxLines) {
+                            return;
+                        }
+                        var d2 = joinNode.position.distanceSquare(node.position);
+                        if (d2 < thresholdSquare) {
+                            lineCount++;
+                            distance = Math.sqrt(d2);
+                            var alpha = (((threshold - distance) / threshold) * 0.4) + (Math.random() * 0.05);
+                            joinLines.lineStyle(alpha * (node.radius + joinNode.radius) * 3, 0x00dbff, alpha);
+                            joinLines.moveTo(node.position.x, node.position.y);
+                            joinLines.lineTo(joinNode.position.x, joinNode.position.y);
+                        }
+                    });
+                }
 
-                //Mouse repulse
+                //Mouse active
                 if ($scope.mouse.active) {
                     var mDist = node.position.distanceSquare($scope.mouse);
                     if (mDist < mouseThresholdSquare) {
@@ -232,7 +255,14 @@ var StarMap = function (width, height, starCount) {
                         joinLines.lineTo($scope.mouse.x, $scope.mouse.y);
                     }
                 }
-
+            });
+            //Draw our deadnodes separately (they fade out but shouldn't have lines)
+            $scope.deadNodes.forEach(function(node,i){
+                node.tick();
+                if(node.state == "DEAD"){
+                    stage.removeChild(node.sprite);
+                    $scope.deadNodes.splice($scope.deadNodes.indexOf(node), 1);
+                }
             });
 
             //Render stars to texture, but move it offscreen (for next frame)

@@ -3,9 +3,10 @@
  * @author Adam Benson <adam@precariouspanther.net>
  */
 
-var StarMap = function (width, height, starCount) {
+var StarMap = function (width, height, maxStars) {
     'use strict';
     var threshold = ((width + height) / 2 ) / 20;
+    var maxLines = maxStars * 7;
     var renderer = PIXI.autoDetectRenderer(width, height, {backgroundColor: 0x160831});
     document.body.appendChild(renderer.view);
     var stage = new PIXI.Container();
@@ -51,7 +52,7 @@ var StarMap = function (width, height, starCount) {
     //shadowSprite.blendMode = PIXI.BLEND_MODES.SOFT_LIGHT;
     stage.addChild(backgroundSprite);
 
-
+    var lineCount;
     var thresholdSquare = Math.pow(threshold, 2);
     var mouseThreshold = threshold * 10;
     var mouseThresholdSquare = thresholdSquare * 10;
@@ -63,8 +64,9 @@ var StarMap = function (width, height, starCount) {
         stage: stage,
         joinLines: joinLines,
         nodes: [],
+        deadNodes: [],
         init: function () {
-            for (var x = 0; x < starCount; x++) {
+            for (var x = 0; x < maxStars; x++) {
                 $scope.addStar(new Vector2(Math.random() * width, Math.random() * height), $scope);
             }
             $scope.mouse.active = false;
@@ -72,44 +74,53 @@ var StarMap = function (width, height, starCount) {
             stage.addChild(joinLines);
             stage.addChild(shadowSprite);
         },
-        addStar:function(position){
+        addStar: function (position) {
             var p = new Particle(position, $scope);
             $scope.addNode(p);
+            if ($scope.nodes.length > maxStars) {
+                $scope.killNode();
+            }
         },
         addNode: function (node) {
             $scope.nodes.push(node);
         },
-        removeNode: function (node) {
-            $scope.nodes.splice($scope.nodes.indexOf(node), 1);
+        killNode: function () {
+            var dead = $scope.nodes.shift();
+            $scope.deadNodes.push(dead);
+            dead.die();
         },
         tick: function () {
             var distance;
 
             //Cull too many stars
-            if($scope.nodes.length > starCount){
-                var dead = $scope.nodes.shift();
-                dead.die();
+            if ($scope.nodes.length > maxStars) {
+                $scope.killNode();
             }
 
-
+            lineCount = 0;
             requestAnimationFrame($scope.tick);
             joinLines.clear();
             $scope.nodes.forEach(function (node, i) {
                 //Particles
                 node.tick();
-                //Join lines
-                $scope.nodes.slice(i).forEach(function (joinNode) {
-                    var d2 = joinNode.position.distanceSquare(node.position);
-                    if (d2 < thresholdSquare) {
-                        distance = Math.sqrt(d2);
-                        var alpha = (((threshold - distance) / threshold) * 0.4) + (Math.random() * 0.05);
-                        joinLines.lineStyle(alpha * (node.radius + joinNode.radius) * 3, 0x00dbff, alpha);
-                        joinLines.moveTo(node.position.x, node.position.y);
-                        joinLines.lineTo(joinNode.position.x, joinNode.position.y);
-                    }
-                });
+                if (lineCount < maxLines) {
+                    $scope.nodes.slice(i).forEach(function (joinNode) {
+                        if (lineCount > maxLines) {
+                            return;
+                        }
+                        var d2 = joinNode.position.distanceSquare(node.position);
+                        if (d2 < thresholdSquare) {
+                            lineCount++;
+                            distance = Math.sqrt(d2);
+                            var alpha = (((threshold - distance) / threshold) * 0.4) + (Math.random() * 0.05);
+                            joinLines.lineStyle(alpha * (node.radius + joinNode.radius) * 3, 0x00dbff, alpha);
+                            joinLines.moveTo(node.position.x, node.position.y);
+                            joinLines.lineTo(joinNode.position.x, joinNode.position.y);
+                        }
+                    });
+                }
 
-                //Mouse repulse
+                //Mouse active
                 if ($scope.mouse.active) {
                     var mDist = node.position.distanceSquare($scope.mouse);
                     if (mDist < mouseThresholdSquare) {
@@ -120,7 +131,14 @@ var StarMap = function (width, height, starCount) {
                         joinLines.lineTo($scope.mouse.x, $scope.mouse.y);
                     }
                 }
-
+            });
+            //Draw our deadnodes separately (they fade out but shouldn't have lines)
+            $scope.deadNodes.forEach(function(node,i){
+                node.tick();
+                if(node.state == "DEAD"){
+                    stage.removeChild(node.sprite);
+                    $scope.deadNodes.splice($scope.deadNodes.indexOf(node), 1);
+                }
             });
 
             //Render stars to texture, but move it offscreen (for next frame)
