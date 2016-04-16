@@ -27,11 +27,11 @@
         }
     });
     body.on("mousemove", function (evt) {
-        scene.mouse.active = (evt.button === 2);
+        scene.mouse.active = (evt.button === 1);
         scene.mouse.x = evt.clientX;
         scene.mouse.y = evt.clientY;
 
-        if(evt.button === 1){
+        if(evt.button === 2){
             scene.addStar(new Vector2(evt.clientX,evt.clientY));
         }
     });
