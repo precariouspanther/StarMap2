@@ -174,13 +174,16 @@ var StarMap = function (width, height, starCount) {
         nodes: [],
         init: function () {
             for (var x = 0; x < starCount; x++) {
-                var p = new Particle(new Vector2(Math.random() * width, Math.random() * height), $scope);
-                $scope.addNode(p);
+                $scope.addStar(new Vector2(Math.random() * width, Math.random() * height), $scope);
             }
             $scope.mouse.active = false;
 
             stage.addChild(joinLines);
             stage.addChild(shadowSprite);
+        },
+        addStar:function(position){
+            var p = new Particle(position, $scope);
+            $scope.addNode(p);
         },
         addNode: function (node) {
             $scope.nodes.push(node);

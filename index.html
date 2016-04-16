@@ -26,10 +26,13 @@
             scene.maxSpeed = Math.max(scene.maxSpeed, 0.5)
         }
     });
-    body.on("mousemove click", function (evt) {
+    body.on("mousemove", function (evt) {
         scene.mouse.active = (evt.button === 2);
         scene.mouse.x = evt.clientX;
         scene.mouse.y = evt.clientY;
+    });
+    body.on("click",function(evt){
+        scene.addStar(new Vector2(evt.clientX,evt.clientY));
     });
     body.on("contextmenu", function (evt) {
         evt.preventDefault();
