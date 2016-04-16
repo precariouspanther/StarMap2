@@ -112,8 +112,9 @@ var Particle = function (position, app) {
  * @author Adam Benson <adam@precariouspanther.net>
  */
 
-var StarMap = function (width, height, starCount, threshold) {
+var StarMap = function (width, height, starCount) {
     'use strict';
+    var threshold = ((width + height) / 2 ) / 20;
     var renderer = PIXI.autoDetectRenderer(width, height, {backgroundColor: 0x160831});
     document.body.appendChild(renderer.view);
     var stage = new PIXI.Container();
@@ -207,7 +208,7 @@ var StarMap = function (width, height, starCount, threshold) {
                 });
 
                 //Mouse repulse
-                if($scope.mouse.active) {
+                if ($scope.mouse.active) {
                     var mDist = node.position.distanceSquare($scope.mouse);
                     if (mDist < mouseThresholdSquare) {
                         distance = Math.sqrt(mDist);
