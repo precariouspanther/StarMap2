@@ -30,8 +30,12 @@
         scene.mouse.active = (evt.button === 2);
         scene.mouse.x = evt.clientX;
         scene.mouse.y = evt.clientY;
+
+        if(evt.button === 1){
+            scene.addStar(new Vector2(evt.clientX,evt.clientY));
+        }
     });
-    body.on("click",function(evt){
+    body.on("mousedown",function(evt){
         scene.addStar(new Vector2(evt.clientX,evt.clientY));
     });
     body.on("contextmenu", function (evt) {

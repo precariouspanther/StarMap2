@@ -84,6 +84,14 @@ var StarMap = function (width, height, starCount) {
         },
         tick: function () {
             var distance;
+
+            //Cull too many stars
+            if($scope.nodes.length > starCount){
+                var dead = $scope.nodes.shift();
+                dead.die();
+            }
+
+
             requestAnimationFrame($scope.tick);
             joinLines.clear();
             $scope.nodes.forEach(function (node, i) {

@@ -76,6 +76,9 @@ var Particle = function (position, app) {
                 $scope.colour.blue = Math.round(Math.random() * 200 + 55);
             }
         },
+        die:function(){
+            app.stage.removeChild(sprite);
+        },
         tick: function () {
             //Twinkle
             sprite.alpha = Math.random() * 0.4 + 0.6;
@@ -193,6 +196,14 @@ var StarMap = function (width, height, starCount) {
         },
         tick: function () {
             var distance;
+
+            //Cull too many stars
+            if($scope.nodes.length > starCount){
+                var dead = $scope.nodes.shift();
+                dead.die();
+            }
+
+
             requestAnimationFrame($scope.tick);
             joinLines.clear();
             $scope.nodes.forEach(function (node, i) {

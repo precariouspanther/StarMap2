@@ -64,6 +64,9 @@ var Particle = function (position, app) {
                 $scope.colour.blue = Math.round(Math.random() * 200 + 55);
             }
         },
+        die:function(){
+            app.stage.removeChild(sprite);
+        },
         tick: function () {
             //Twinkle
             sprite.alpha = Math.random() * 0.4 + 0.6;
