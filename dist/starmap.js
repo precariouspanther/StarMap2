@@ -144,7 +144,8 @@ var StarMap = function (width, height, starCount, threshold) {
         0.1, 0.4, 0.1
     ], width, height);
 
-    shadowSprite.alpha = 0.49;
+    //shadowSprite.alpha = 0.49;
+    shadowSprite.alpha = 0.41;
     //shadowSprite.blendMode = PIXI.BLEND_MODES.SOFT_LIGHT;
 
     /* var filter = new PIXI.filters.ConvolutionFilter([

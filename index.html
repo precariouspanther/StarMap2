@@ -12,7 +12,7 @@
 <body>
 
 <script type="text/javascript">
-    var scene = new StarMap(window.innerWidth, window.innerHeight, 200, 100);
+    var scene = new StarMap(window.innerWidth, window.innerHeight, 500, 100);
     //Start
     scene.tick();
     var body = $('body');
@@ -26,7 +26,7 @@
             scene.maxSpeed = Math.max(scene.maxSpeed, 0.5)
         }
     });
-    body.on("mousemove", function (evt) {
+    body.on("mousemove click", function (evt) {
         scene.mouse.active = (evt.button === 2);
         scene.mouse.x = evt.clientX;
         scene.mouse.y = evt.clientY;
