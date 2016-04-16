@@ -15,8 +15,8 @@
     var scene = new StarMap(window.innerWidth, window.innerHeight, 200, 100);
     //Start
     scene.tick();
-
-    $('body').bind('mousewheel', function (e) {
+    var body = $('body');
+    body.bind('mousewheel', function (e) {
         if (e.originalEvent.wheelDelta / 120 > 0) {
             scene.maxSpeed *= 1.5;
             scene.maxSpeed = Math.min(scene.maxSpeed, 100);
@@ -26,6 +26,15 @@
             scene.maxSpeed = Math.max(scene.maxSpeed, 0.5)
         }
     });
+    body.on("mousemove", function (evt) {
+        scene.mouse.active = (evt.button === 2);
+        scene.mouse.x = evt.clientX;
+        scene.mouse.y = evt.clientY;
+    });
+    body.on("contextmenu", function (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+    })
 
 </script>
 
