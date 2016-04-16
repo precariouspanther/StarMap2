@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>StarMap 2</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/3.0.11/pixi.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script type="text/javascript" src="dist/starmap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="dist/starmap.min.css"/>
+    <script>PIXI.utils._saidHello = true;</script>
+</head>
+<body>
+
+<script type="text/javascript">
+    var scene = new StarMap(window.innerWidth, window.innerHeight, 200, 100);
+    //Start
+    scene.tick();
+
+    $('body').bind('mousewheel', function (e) {
+        if (e.originalEvent.wheelDelta / 120 > 0) {
+            scene.maxSpeed *= 1.5;
+            scene.maxSpeed = Math.min(scene.maxSpeed, 100);
+        }
+        else {
+            scene.maxSpeed *= 0.75;
+            scene.maxSpeed = Math.max(scene.maxSpeed, 0.5)
+        }
+    });
+
+</script>
+
+</body>
+</html>
