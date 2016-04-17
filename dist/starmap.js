@@ -136,6 +136,7 @@ var StarMap = function (width, height, maxStars) {
     var stage = new PIXI.Container();
     var joinLines = new PIXI.Graphics();
     joinLines.blendMode = PIXI.BLEND_MODES.ADD;
+    var counter = $('<span class="counter"></span>').appendTo(document.body);
 
     var backgroundTexture = new CanvasTexture(function (canvas) {
         canvas.width = width;
@@ -171,12 +172,9 @@ var StarMap = function (width, height, maxStars) {
      0.1,0.1,0.1
      ],width,height);*/
     shadowSprite.filters = [convolutionFilter];
-    //shadowSprite.blendMode = PIXI.BLEND_MODES.OVERLAY;
-    //shadowSprite.blendMode = PIXI.BLEND_MODES.ADD;
-    //shadowSprite.blendMode = PIXI.BLEND_MODES.SOFT_LIGHT;
     stage.addChild(backgroundSprite);
 
-    var lineCount;
+    var lineCount,joinCount;
     var thresholdSquare = Math.pow(threshold, 2);
     var mouseThreshold = threshold * 10;
     var mouseThresholdSquare = thresholdSquare * 10;
@@ -215,7 +213,7 @@ var StarMap = function (width, height, maxStars) {
         },
         tick: function () {
             var distance;
-
+            counter.html($scope.nodes.length + $scope.deadNodes.length);
             //Cull too many stars
             if ($scope.nodes.length > maxStars) {
                 $scope.killNode();
@@ -228,13 +226,15 @@ var StarMap = function (width, height, maxStars) {
                 //Particles
                 node.tick();
                 if (lineCount < maxLines) {
+                    joinCount=0;
                     $scope.nodes.slice(i).forEach(function (joinNode) {
-                        if (lineCount > maxLines) {
+                        if (lineCount > maxLines || joinCount > 12) {
                             return;
                         }
                         var d2 = joinNode.position.distanceSquare(node.position);
                         if (d2 < thresholdSquare) {
                             lineCount++;
+                            joinCount++;
                             distance = Math.sqrt(d2);
                             var alpha = (((threshold - distance) / threshold) * 0.4) + (Math.random() * 0.05);
                             joinLines.lineStyle(alpha * (node.radius + joinNode.radius) * 3, 0x00dbff, alpha);
