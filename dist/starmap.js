@@ -129,7 +129,7 @@ var Particle = function (position, app) {
 
 var StarMap = function (width, height, maxStars) {
     'use strict';
-    var threshold = ((width + height) / 2 ) / 20;
+    var threshold = Math.max(((width + height) / 2 ) / 40,30);
     var maxLines = maxStars * 7;
     var renderer = PIXI.autoDetectRenderer(width, height, {backgroundColor: 0x160831});
     document.body.appendChild(renderer.view);
