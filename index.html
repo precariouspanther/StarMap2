@@ -41,7 +41,16 @@
     body.on("contextmenu", function (evt) {
         evt.preventDefault();
         evt.stopPropagation();
-    })
+    });
+    body.on("keypress",function(evt){
+        var keycode = (evt.keyCode ? evt.keyCode : evt.which);
+        switch(keycode){
+            case 32:
+                    scene.clear();
+                break;
+        }
+        console.log(keycode);
+    });
 
 </script>
 </body>

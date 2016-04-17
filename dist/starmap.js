@@ -206,6 +206,12 @@ var StarMap = function (width, height, maxStars) {
         addNode: function (node) {
             $scope.nodes.push(node);
         },
+        clear:function(){
+            $scope.nodes.forEach(function (node, i) {
+                stage.removeChild(node.sprite);
+            });
+            $scope.nodes = [];
+        },
         killNode: function () {
             var dead = $scope.nodes.shift();
             $scope.deadNodes.push(dead);
