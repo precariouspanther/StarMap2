@@ -12,7 +12,7 @@
 <body>
 
 <script type="text/javascript">
-    var scene = new StarMap(window.innerWidth, window.innerHeight, 600);
+    var scene = new StarMap(window.innerWidth, window.innerHeight, 1200);
     //Start
     scene.tick();
     var body = $('body');
@@ -23,33 +23,45 @@
         }
         else {
             scene.maxSpeed *= 0.75;
-            scene.maxSpeed = Math.max(scene.maxSpeed, 0.5)
+            scene.maxSpeed = Math.max(scene.maxSpeed, 0.1)
         }
     });
     body.on("mousemove", function (evt) {
-        scene.mouse.active = (evt.button === 1);
+        scene.mouse.buttons = evt.buttons;
         scene.mouse.x = evt.clientX;
         scene.mouse.y = evt.clientY;
-
-        if(evt.button === 2){
-            scene.addStar(new Vector2(evt.clientX,evt.clientY));
+        if (evt.buttons === 1) {
+            scene.addStar(new Vector2(evt.clientX, evt.clientY));
         }
-    });
-    body.on("mousedown",function(evt){
-        scene.addStar(new Vector2(evt.clientX,evt.clientY));
     });
     body.on("contextmenu", function (evt) {
         evt.preventDefault();
         evt.stopPropagation();
     });
-    body.on("keypress",function(evt){
+    body.on("keypress", function (evt) {
         var keycode = (evt.keyCode ? evt.keyCode : evt.which);
-        switch(keycode){
+        switch (keycode) {
+            case 43:
+                //Numpad Plus
+                scene.maxStars += 10;
+                break;
+            case 45:
+                //Numpad minus
+                scene.maxStars -= 10;
+                break;
             case 32:
-                    scene.clear();
+                //Space
+                scene.clear();
+                break;
+            case 108:
+                //L
+                scene.showLines = !scene.showLines;
+                break;
+            default:
+                console.log(keycode);
                 break;
         }
-        console.log(keycode);
+
     });
 
 </script>
